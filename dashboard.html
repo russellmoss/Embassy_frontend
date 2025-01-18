@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            background-color: #d8d1ae;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        h1, h2 {
+            color: #715100;
+        }
+
+        input[type="text"], input[type="email"], button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #715100;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #5e4300;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="welcomeText">Welcome!</h1>
+        <p>Loyalty Points: <span id="loyaltyPoints">0</span></p>
+
+        <h2>Send a Free Tasting Referral</h2>
+        <form id="referralForm">
+            <input type="text" id="refFirstName" placeholder="Friend's First Name" required>
+            <input type="text" id="refLastName" placeholder="Friend's Last Name" required>
+            <input type="email" id="refEmail" placeholder="Friend's Email" required>
+            <button type="submit">Send Referral</button>
+        </form>
+        <p id="referralStatus"></p>
+        <br>
+        <a href="index.html">Log Out</a>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const ambassadorName = localStorage.getItem('userName') || 'Ambassador';
+        document.getElementById('welcomeText').innerText = `Welcome, ${ambassadorName.split(' ')[0]}!`;
+
+        const form = document.getElementById('referralForm');
+        form.addEventListener('submit', (event) => handleReferralSubmit(event, ambassadorName));
+    });
+
+    async function handleReferralSubmit(event, ambassadorName) {
+        event.preventDefault();
+
+        const firstName = document.getElementById('refFirstName').value.trim();
+        const lastName = document.getElementById('refLastName').value.trim();
+        const email = document.getElementById('refEmail').value.trim();
+
+        if (!firstName || !lastName || !email) {
+            document.getElementById('referralStatus').innerText = 'Error: All fields are required.';
+            document.getElementById('referralStatus').classList.add('error');
+            return;
+        }
+
+        const payload = {
+            referrerId: localStorage.getItem('userId'),
+            referrerName: ambassadorName,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+        };
+
+        try {
+            const response = await fetch('https://embassy-backend.onrender.com/referral', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('referralStatus').innerText = 'Referral sent successfully!';
+                document.getElementById('referralStatus').classList.add('success');
+            } else {
+                document.getElementById('referralStatus').innerText = `Error: ${data.message || 'An error occurred.'}`;
+                document.getElementById('referralStatus').classList.add('error');
+                console.error('API Error:', data);
+            }
+        } catch (error) {
+            document.getElementById('referralStatus').innerText = 'An error occurred. Please try again.';
+            document.getElementById('referralStatus').classList.add('error');
+            console.error('Network Error:', error);
+        }
+    }
+</script>
+</body>
+</html>
