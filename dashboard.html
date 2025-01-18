@@ -57,6 +57,15 @@
                 const referralLastName = document.getElementById('last-name').value;
                 const referralEmail = document.getElementById('email').value;
 
+                // Log the payload for debugging
+                console.log({
+                    referrerId: userId,
+                    referrerName,
+                    firstName: referralFirstName,
+                    lastName: referralLastName,
+                    email: referralEmail,
+                });
+
                 try {
                     const response = await fetch('https://embassy-backend.onrender.com/referral', {
                         method: 'POST',
